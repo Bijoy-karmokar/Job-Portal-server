@@ -24,20 +24,36 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const jobCollection = client.db("JobPortal").collection('jobs');
-
+    const jobsCollection = client.db("JobPortal").collection('jobs');
+    const applicationsCollection = client.db("JobPortal").collection("applications");
 
     app.get('/jobs',async(req,res)=>{
-        const result = await jobCollection.find().toArray();
+        const result = await jobsCollection.find().toArray();
         res.send(result);
     })
 
     app.get("/jobs/:id",async(req,res)=>{
          const id = req.params.id;
          const qurey = {_id : new ObjectId(id)};
-         const result = await jobCollection.findOne(qurey);
+         const result = await jobsCollection.findOne(qurey);
          res.send(result);
     })
+  //  application info
+    app.get('/applications', async(req,res)=>{
+      const email = req.query.email;
+      const qurey ={
+        applicant: email
+      }
+      const result = await applicationsCollection.find(qurey).toArray();
+      res.send(result);
+    })
+
+    app.post("/applications", async(req,res)=>{
+      const applicaionInfo = req.body;
+      const result = await applicationsCollection.insertOne(applicaionInfo);
+      res.send(result);
+    })
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
